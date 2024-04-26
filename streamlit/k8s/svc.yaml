@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: rag-frontend
+spec:
+  ports:
+    - name: 8501-tcp
+      protocol: TCP
+      port: 8501
+      targetPort: 8501
+  selector:
+    app: rag-frontend
+  type: ClusterIP

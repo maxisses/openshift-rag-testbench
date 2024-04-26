@@ -1,0 +1,50 @@
+commands:
+- exec:
+    commandLine: pip install -r requirements-odo.txt
+    component: py
+    group:
+      isDefault: true
+      kind: build
+    workingDir: ${PROJECT_SOURCE}
+  id: pip-install-requirements
+- exec:
+    commandLine: python -m streamlit run rag-bot.py
+    component: py
+    group:
+      isDefault: true
+      kind: run
+    workingDir: ${PROJECT_SOURCE}
+  id: run-app
+components:
+- container:
+    args:
+    - tail
+    - -f
+    - /dev/null
+    endpoints:
+    - name: http-python
+      exposure: public
+      targetPort: 8501
+    - name: http-python-backup
+      exposure: public
+      targetPort: 8502
+    image: registry.access.redhat.com/ubi9/python-311@sha256:78aa5022cb9e28652b5923162fee2e6e6192df84166abb5c7438910f70f9d02e
+    mountSources: true
+  name: py
+metadata:
+  description: Python (version 3.9.x) is an interpreted, object-oriented, high-level
+    programming language with dynamic semantics. Its high-level built in data structures,
+    combined with dynamic typing and dynamic binding, make it very attractive for
+    Rapid Application Development, as well as for use as a scripting or glue language
+    to connect existing components together.
+  displayName: Python
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/python.svg
+  language: Python
+  name: rag-bot
+  projectType: Python
+  provider: MaxD
+  tags:
+  - Python
+  - Pip
+  version: 2.1.0
+schemaVersion: 2.1.0

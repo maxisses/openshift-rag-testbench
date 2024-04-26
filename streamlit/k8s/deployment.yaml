@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: rag-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-frontend
+  template:
+    metadata:
+      labels:
+        app: rag-frontend
+    spec:
+      containers:
+        - name: rag-frontend
+          image: 'quay.io/mdargatz/streamlitbot:latest'
+          ports:
+            - containerPort: 8501
+              protocol: TCP
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: rag-frontend-config  # Mount the ConfigMap here
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%

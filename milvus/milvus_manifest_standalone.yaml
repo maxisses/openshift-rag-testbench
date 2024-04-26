@@ -1,0 +1,373 @@
+---
+# Source: milvus/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vectordb-milvus
+data:
+  default.yaml: "# Copyright (C) 2019-2021 Zilliz. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance\n# with the License. You may obtain a copy of the License at\n#\n# http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software distributed under the License\n# is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express\n# or implied. See the License for the specific language governing permissions and limitations under the License.\n\netcd:\n  endpoints:\n    - vectordb-etcd:2379\n\nmetastore:\n  type: etcd\n\nminio:\n  address: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc\n  port: 80\n  accessKeyID: 2032EB53ZIW5VLMUZXMB\n  secretAccessKey: 0vwrJDAq5YiSwUsJcZNDlU0sS9UnHCEb4Kw2CI0N\n  useSSL: false\n  bucketName: mdargatz-chatbot-bucket-008349e8-2aa3-416a-9504-da0d1bd8f53d\n  rootPath: \n  useIAM: false\n  cloudProvider: aws\n  iamEndpoint: \n  region: \n  useVirtualHost: false\n\nmq:\n  type: rocksmq\n\nmessageQueue: rocksmq\n\nrootCoord:\n  address: localhost\n  port: 53100\n  enableActiveStandby: false  # Enable rootcoord active-standby\n\nproxy:\n  port: 19530\n  internalPort: 19529\n\nqueryCoord:\n  address: localhost\n  port: 19531\n\n  enableActiveStandby: false  # Enable querycoord active-standby\n\nqueryNode:\n  port: 21123\n  enableDisk: true # Enable querynode load disk index, and search on disk index\n\nindexCoord:\n  address: localhost\n  port: 31000\n  enableActiveStandby: false  # Enable indexcoord active-standby\n\nindexNode:\n  port: 21121\n  enableDisk: true # Enable index node build disk vector index\n\ndataCoord:\n  address: localhost\n  port: 13333\n  enableActiveStandby: false  # Enable datacoord active-standby\n\ndataNode:\n  port: 21124\n\nlog:\n  level: info\n  file:\n    rootPath: \"\"\n    maxSize: 300\n    maxAge: 10\n    maxBackups: 20\n  format: text\n"
+  user.yaml: |-
+    #    For example enable rest http for milvus proxy
+    #    proxy:
+    #      http:
+    #        enabled: true
+    ##  Enable tlsMode and set the tls cert and key
+    #  tls:
+    #    serverPemPath: /etc/milvus/certs/tls.crt
+    #    serverKeyPath: /etc/milvus/certs/tls.key
+    #   common:
+    #     security:
+    #       tlsMode: 1
+    common:
+      security:
+        authorizationEnabled: true
+---
+# Source: milvus/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vectordb-milvus
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    helm.sh/chart: milvus-4.1.28
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/version: "2.3.13"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: 50Gi
+---
+# Source: milvus/charts/etcd/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: vectordb-etcd-headless
+  namespace: mdargatz-chatbot
+  labels:
+    app.kubernetes.io/name: etcd
+    helm.sh/chart: etcd-6.3.3
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: "client"
+      port: 2379
+      targetPort: client
+    - name: "peer"
+      port: 2380
+      targetPort: peer
+  selector:
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/instance: vectordb
+---
+# Source: milvus/charts/etcd/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: vectordb-etcd
+  namespace: mdargatz-chatbot
+  labels:
+    app.kubernetes.io/name: etcd
+    helm.sh/chart: etcd-6.3.3
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: "client"
+      port: 2379
+      targetPort: client
+      nodePort: null
+    - name: "peer"
+      port: 2380
+      targetPort: peer
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: etcd
+    app.kubernetes.io/instance: vectordb
+---
+# Source: milvus/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: vectordb-milvus
+  labels:
+    helm.sh/chart: milvus-4.1.28
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/version: "2.3.13"
+    app.kubernetes.io/managed-by: Helm
+    component: "standalone"
+spec:
+  type: ClusterIP
+  ports:
+    - name: milvus
+      port: 19530
+      protocol: TCP
+      targetPort: milvus
+    - name: metrics
+      protocol: TCP
+      port: 9091
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: vectordb
+    component: "standalone"
+---
+# Source: milvus/templates/standalone-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vectordb-milvus-standalone
+  labels:
+    helm.sh/chart: milvus-4.1.28
+    app.kubernetes.io/name: milvus
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/version: "2.3.13"
+    app.kubernetes.io/managed-by: Helm
+    component: "standalone"
+  annotations:
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: milvus
+      app.kubernetes.io/instance: vectordb
+      component: "standalone"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: milvus
+        app.kubernetes.io/instance: vectordb
+        component: "standalone"
+      annotations:
+        checksum/config: 22e551c4424895918d9351a6a3526da8cde987bb324d171b9a04074027a97017
+    spec:
+      serviceAccountName: default
+      initContainers:
+        - name: config
+          command:
+            - /cp
+            - /run-helm.sh,/merge
+            - /milvus/tools/run-helm.sh,/milvus/tools/merge
+          image: "milvusdb/milvus-config-tool:v0.1.2"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /milvus/tools
+              name: tools
+      containers:
+        - name: standalone
+          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          imagePullPolicy: IfNotPresent
+          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "standalone"]
+          ports:
+            - name: milvus
+              containerPort: 19530
+              protocol: TCP
+            - name: metrics
+              containerPort: 9091
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          resources: {}
+          env:
+          volumeMounts:
+            - mountPath: /milvus/tools
+              name: tools
+            - name: milvus-config
+              mountPath: /milvus/configs/default.yaml
+              subPath: default.yaml
+              readOnly: true
+            - name: milvus-config
+              mountPath: /milvus/configs/user.yaml
+              subPath: user.yaml
+              readOnly: true
+            - name: milvus-data-disk
+              mountPath: "/var/lib/milvus"
+              subPath:
+            - mountPath: /var/lib/milvus/data
+              name: disk
+      volumes:
+        - emptyDir: {}
+          name: tools
+        - name: milvus-config
+          configMap:
+            name: vectordb-milvus
+        - name: milvus-data-disk
+          persistentVolumeClaim:
+            claimName: vectordb-milvus
+        - name: disk
+          emptyDir: {}
+---
+# Source: milvus/charts/etcd/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vectordb-etcd
+  namespace: mdargatz-chatbot
+  labels:
+    app.kubernetes.io/name: etcd
+    helm.sh/chart: etcd-6.3.3
+    app.kubernetes.io/instance: vectordb
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: etcd
+      app.kubernetes.io/instance: vectordb
+  serviceName: vectordb-etcd-headless
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: etcd
+        helm.sh/chart: etcd-6.3.3
+        app.kubernetes.io/instance: vectordb
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+    spec:
+      affinity:
+        podAffinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: etcd
+                    app.kubernetes.io/instance: vectordb
+                namespaces:
+                  - "mdargatz-chatbot"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+      securityContext: {}
+      serviceAccountName: "default"
+      containers:
+        - name: etcd
+          image: docker.io/milvusdb/etcd:3.5.5-r4
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ETCDCTL_API
+              value: "3"
+            - name: ETCD_ON_K8S
+              value: "yes"
+            - name: ETCD_START_FROM_SNAPSHOT
+              value: "no"
+            - name: ETCD_DISASTER_RECOVERY
+              value: "no"
+            - name: ETCD_NAME
+              value: "$(MY_POD_NAME)"
+            - name: ETCD_DATA_DIR
+              value: "/bitnami/etcd/data"
+            - name: ETCD_LOG_LEVEL
+              value: "info"
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes"
+            - name: ETCD_ADVERTISE_CLIENT_URLS
+              value: "http://$(MY_POD_NAME).vectordb-etcd-headless.mdargatz-chatbot.svc.cluster.local:2379"
+            - name: ETCD_LISTEN_CLIENT_URLS
+              value: "http://0.0.0.0:2379"
+            - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
+              value: "http://$(MY_POD_NAME).vectordb-etcd-headless.mdargatz-chatbot.svc.cluster.local:2380"
+            - name: ETCD_LISTEN_PEER_URLS
+              value: "http://0.0.0.0:2380"
+            - name: ETCD_AUTO_COMPACTION_MODE
+              value: "revision"
+            - name: ETCD_AUTO_COMPACTION_RETENTION
+              value: "1000"
+            - name: ETCD_QUOTA_BACKEND_BYTES
+              value: "4294967296"
+            - name: ETCD_HEARTBEAT_INTERVAL
+              value: "500"
+            - name: ETCD_ELECTION_TIMEOUT
+              value: "2500"
+          envFrom:
+          ports:
+            - name: client
+              containerPort: 2379
+              protocol: TCP
+            - name: peer
+              containerPort: 2380
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /opt/bitnami/scripts/etcd/healthcheck.sh
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - /opt/bitnami/scripts/etcd/healthcheck.sh
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/etcd
+      volumes:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "10Gi"

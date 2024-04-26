@@ -1,0 +1,10 @@
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: chatbot-bucket
+  labels:
+    bucket-provisioner: openshift-storage.ceph.rook.io-bucket
+spec:
+  generateBucketName: chatbot-bucket
+  objectBucketName: obc-chatbot-chatbot-bucket
+  storageClassName: ocs-storagecluster-ceph-rgw

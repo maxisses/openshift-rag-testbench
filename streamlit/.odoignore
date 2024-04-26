@@ -1,0 +1,4 @@
+venv/
+*.zip
+.DS_Store
+k8s

@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ollama
+spec:
+  ports:
+    - name: frontend
+      protocol: TCP
+      port: 11434
+      targetPort: frontend
+  type: ClusterIP
+  selector:
+    app: ollama-app

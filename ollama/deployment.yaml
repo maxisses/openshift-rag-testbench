@@ -1,0 +1,59 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-app
+  template:
+    metadata:
+      labels:
+        app: ollama-app
+    spec:
+      volumes:
+        - name: ollama-data
+          persistentVolumeClaim:
+            claimName: ollama-data
+      containers:
+        - resources:
+            limits:
+              cpu: '32'
+              memory: 32Gi
+            requests:
+              cpu: '2'
+              memory: 8Gi
+          terminationMessagePath: /dev/termination-log
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - '-c'
+                  - /bin/ollama pull mistral
+          name: ollama
+          env:
+            - name: FOO
+              value: BAR
+          ports:
+            - name: frontend
+              containerPort: 11434
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /.ollama
+          terminationMessagePolicy: File
+          image: 'docker.io/ollama/ollama:latest'
+          args:
+            - serve
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

@@ -1,0 +1,11 @@
+## --extra-index-url https://download.pytorch.org/whl/cpu
+langchain==0.1.9
+pymilvus==2.3.6
+## sentence-transformers==2.4.0 ## put in dockerfile as cpu-only option
+openai==1.13.3
+Werkzeug==2.2.2
+einops
+streamlit
+langchain-community
+pandas
+langchain_openai
