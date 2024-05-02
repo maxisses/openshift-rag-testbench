@@ -58,9 +58,9 @@ if not check_password():
 #######################################################
 
 # Get default values of environment variables
-INFERENCE_SERVER_URL = os.environ.get("INFERENCE_SERVER_URL", "http://llm-port.stefanb-llm-test.svc.cluster.local:80/v1")
-MODEL_NAME = os.environ.get("MODEL_NAME", "mistralai/Mistral-7B-Instruct-v0.2")
-MILVUS_HOST = os.environ.get("MILVUS_HOST", "vectordb-milvus.milvus.svc.cluster.local")
+model_url = os.environ.get("INFERENCE_SERVER_URL", "http://llm-port.stefanb-llm-test.svc.cluster.local:80/v1")
+llm_model_name = os.environ.get("MODEL_NAME", "mistralai/Mistral-7B-Instruct-v0.2")
+MILVUS_HOST = os.environ.get("MILVUS_HOST", "vectordb-milvus")
 MILVUS_PORT = os.environ.get("MILVUS_PORT", "19530")
 MILVUS_USERNAME = os.environ.get("MILVUS_USERNAME", "root")
 MILVUS_PASSWORD = os.environ.get("MILVUS_PASSWORD", "Milvus")
@@ -90,28 +90,30 @@ PROMPT_TEMPLATE = os.environ.get("PROMPT_TEMPLATE", """
 st.title(APP_NAME + 'Bot')
 
 #####################################
-# create dropdown for url selection #
+# create dropdowns for url and model selection #
 #####################################
-models_url_options = ["http://vllm:8000/v1","https://api.openai.com/v1","http://ollama:11434", "http://llm-port.stefanb-llm-test.svc.cluster.local:80/v1"]+ ["Another endpoint..."]
-INFERENCE_SERVER_URL = st.sidebar.selectbox("Inference Server URL", options=models_url_options)
+model_url_names = {
+    "http://vllm:8000/v1":['mistralai/Mistral-7B-Instruct-v0.2','meta-llama/Meta-Llama-3-8B-Instruct'] + ["Another model name..."],
+    "https://api.openai.com/v1":['gpt-4-turbo','gpt-4-32k'] + ["Another model name..."],
+    "http://ollama:11434":['mistral','llama2','llama3'] + ["Another model name..."],
+    "Another option":[],
+}
 
-# Create text input for custom entry
-if INFERENCE_SERVER_URL == "Another endpoint...": 
-    INFERENCE_SERVER_URL = st.sidebar.text_input("Enter your model endpoint...")
+# adding "select" as the first and default choice
+model_url = st.sidebar.selectbox('Select Model Endpoint', options=['select']+list(model_url_names.keys()))
+# display selectbox 2 if model_url is not "select"
+if model_url != 'select':
+    if model_url != 'Another option':
+        llm_model_name = st.sidebar.selectbox('Select Model Name', options=model_url_names[model_url])
+        if llm_model_name == 'Another model name...':
+            llm_model_name = st.sidebar.text_input("Enter your model name...")
+    else:
+        model_url = st.sidebar.text_input("Enter your model endpoint...")
+        llm_model_name = st.sidebar.text_input("Enter your model name...")
 
-#################################
-# create dropdown for modelname #
-#################################
-model_names = ["mistralai/Mistral-7B-Instruct-v0.2","mistral","llama2", "gpt-4-turbo", "gpt-4-32k"]+ ["Another model name..."]
-MODEL_NAME = st.sidebar.selectbox("Model Name", model_names)
-
-# Create text input for custom entry
-if MODEL_NAME == "Another model name...": 
-    MODEL_NAME = st.sidebar.text_input("Enter your model name...")
-
-#################################
-# create dropdown for modelname #
-#################################
+#######################################
+# create dropdown for Knowledge Bases #
+#######################################
 collections = ["redhat_notes","redhat_notes"]+ ["Another collection name..."]
 MILVUS_COLLECTION = st.sidebar.selectbox("Knowledge Collection", collections)
 
@@ -181,8 +183,8 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
         st.success('GPU', icon="✅")
         llm = VLLMOpenAI(
             openai_api_key=OPENAI_API_KEY,
-            openai_api_base=INFERENCE_SERVER_URL,
-            model_name=MODEL_NAME,
+            openai_api_base=model_url,
+            model_name=llm_model_name,
             max_tokens=int(MAX_TOKENS),
             top_p=float(TOP_P),
             temperature=float(TEMPERATURE),
@@ -193,8 +195,8 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
         )
     elif model_endpoint == "http://ollama:11434":
         llm = Ollama(
-            base_url=INFERENCE_SERVER_URL,
-            model=MODEL_NAME,
+            base_url=model_url,
+            model=model_name,
             verbose=False,
             callbacks=[QueueCallback(q)]
             )
@@ -202,8 +204,8 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
     elif model_endpoint == "https://api.openai.com/v1":
         llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
-          # openai_api_base=INFERENCE_SERVER_URL,
-            model_name=MODEL_NAME,
+          # openai_api_base=model_url,
+            model_name=llm_model_name,
             max_tokens=int(MAX_TOKENS),
             top_p=float(TOP_P),
             temperature=float(TEMPERATURE),
@@ -216,8 +218,8 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
         st.warning('Model URL unknown - trying to initialize via vLLM', icon="⚠️")
         llm = VLLMOpenAI(
             openai_api_key=OPENAI_API_KEY,
-            openai_api_base=INFERENCE_SERVER_URL,
-            model_name=MODEL_NAME,
+            openai_api_base=model_url,
+            model_name=llm_model_name,
             max_tokens=int(MAX_TOKENS),
             top_p=float(TOP_P),
             temperature=float(TEMPERATURE),
@@ -296,4 +298,4 @@ with st.form('my_form'):
     submitted = st.form_submit_button('Submit')
     if submitted:
         with st.spinner('Wait for my response...'):
-            generate_response(text, MILVUS_COLLECTION, INFERENCE_SERVER_URL)
+            generate_response(text, MILVUS_COLLECTION, model_url)

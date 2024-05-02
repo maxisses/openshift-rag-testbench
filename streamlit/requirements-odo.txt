@@ -9,3 +9,4 @@ streamlit
 langchain-community
 pandas
 langchain_openai
+langchain-ibm
