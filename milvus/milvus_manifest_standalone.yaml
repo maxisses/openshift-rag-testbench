@@ -47,7 +47,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-etcd-headless
-  namespace: mdargatz-chatbot
   labels:
     app.kubernetes.io/name: etcd
     helm.sh/chart: etcd-6.3.3
@@ -75,7 +74,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-etcd
-  namespace: mdargatz-chatbot
   labels:
     app.kubernetes.io/name: etcd
     helm.sh/chart: etcd-6.3.3
@@ -233,7 +231,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: vectordb-etcd
-  namespace: mdargatz-chatbot
   labels:
     app.kubernetes.io/name: etcd
     helm.sh/chart: etcd-6.3.3

@@ -114,7 +114,7 @@ if model_url != 'select':
 #######################################
 # create dropdown for Knowledge Bases #
 #######################################
-collections = ["redhat_notes","redhat_notes"]+ ["Another collection name..."]
+collections = ["redhat_notes","snemeis_notes"]+ ["Another collection name..."]
 MILVUS_COLLECTION = st.sidebar.selectbox("Knowledge Collection", collections)
 
 # Create text input for custom entry

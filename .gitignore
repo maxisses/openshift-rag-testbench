@@ -1,5 +1,4 @@
 pdfs
-pdfs
 docx
 pptx
 vllm/vllm-native/secret.yaml
@@ -7,6 +6,8 @@ streamlit/.odo
 streamlit/.streamlit
 streamlit/venv
 streamlit/.DS_Store
-notebooks/notebooks-for-ingestion/pdfs/*
-notebooks/notebooks-for-ingestion/pptx/*
-notebooks/notebooks-for-ingestion/docx/*
+./notebooks-for-ingestion/pdfs/*
+./notebooks-for-ingestion/pptx/*
+./notebooks-for-ingestion/docx/*
+venv
+./*/venv
