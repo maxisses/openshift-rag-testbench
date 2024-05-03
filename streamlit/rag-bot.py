@@ -16,7 +16,6 @@ from langchain.callbacks.base import BaseCallbackHandler
 
 load_dotenv()
 
-import os
 from collections.abc import Generator
 from queue import Empty, Queue
 from threading import Thread
@@ -114,7 +113,7 @@ if model_url != 'select':
 #######################################
 # create dropdown for Knowledge Bases #
 #######################################
-collections = ["redhat_notes","snemeis_notes"]+ ["Another collection name..."]
+collections = ["redhat_notes","snemeis_notes","wiki_internal"]+ ["Another collection name..."]
 MILVUS_COLLECTION = st.sidebar.selectbox("Knowledge Collection", collections)
 
 # Create text input for custom entry
@@ -179,8 +178,8 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
     q = Queue()
 
     # Instantiate LLM
-    if model_endpoint == "http://vllm:8000/v1" or model_endpoint == "http://llm-port.stefanb-llm-test.svc.cluster.local:80/v1":
-        st.success('GPU', icon="✅")
+    if model_endpoint == "http://vllm:8000/v1":
+        st.success('vLLM runs only on a GPU', icon="✅")
         llm = VLLMOpenAI(
             openai_api_key=OPENAI_API_KEY,
             openai_api_base=model_url,
@@ -196,11 +195,11 @@ def stream(input_text, selected_collection, model_endpoint) -> Generator:
     elif model_endpoint == "http://ollama:11434":
         llm = Ollama(
             base_url=model_url,
-            model=model_name,
+            model=llm_model_name,
             verbose=False,
             callbacks=[QueueCallback(q)]
             )
-        st.warning('No GPU', icon="⚠️")
+        st.warning('Ollama runs on GPU & CPU', icon="⚠️")
     elif model_endpoint == "https://api.openai.com/v1":
         llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
