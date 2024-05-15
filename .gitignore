@@ -6,8 +6,11 @@ streamlit/.odo
 streamlit/.streamlit
 streamlit/venv
 streamlit/.DS_Store
-./notebooks-for-ingestion/pdfs/*
-./notebooks-for-ingestion/pptx/*
-./notebooks-for-ingestion/docx/*
+notebooks-for-ingestion/pdfs/*
+notebooks-for-ingestion/pptx/*
+notebooks-for-ingestion/docx/*
+notebooks-for-ingestion/knowledge_base_data/*
 venv
-./*/venv
+*/venv
+*/localdata/*
+vllm/vllm-native/localdata/*
