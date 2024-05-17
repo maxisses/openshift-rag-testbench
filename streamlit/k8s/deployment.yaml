@@ -32,9 +32,3 @@ spec:
         - name: streamlit-localdata
           persistentVolumeClaim:
             claimName: rag-frontend-pvc
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
-You need to create a PersistentVolumeClaim (PVC) named rag-frontend-pvc separately in your Kubernetes or OpenS

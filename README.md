@@ -5,12 +5,12 @@
 
 #### 1. ODF or AWS S3: Create a bucket
 ```sh
+oc new-project <yourname>-chatbot
 oc apply -f milvus/bucket-claim.yaml
 ```
 
 #### 2. Download helm repo & Update milvus/openshift-values.yaml with your Object Bucket credentials or activate minio (which autogenerates for you but also spins up minio)
 ```bash
-oc new-project <yourname>-chatbot
 helm template -f openshift-values.yaml vectordb --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false milvus/milvus > milvus_manifest_standalone.yaml
 
 yq '(select(.kind == "StatefulSet" and .metadata.name == "vectordb-etcd") | .spec.template.spec.securityContext) = {}' -i milvus_manifest_standalone.yaml
