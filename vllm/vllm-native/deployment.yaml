@@ -53,8 +53,6 @@ spec:
           args: [
             "--model",
             "mistralai/Mistral-7B-Instruct-v0.2",
-            "--download-dir",
-            "/models-cache",
             "--dtype", "float16",
             "--max-model-len", "6144" ]
           securityContext:
@@ -81,11 +79,11 @@ spec:
             failureThreshold: 24
           volumeMounts:
             - name: models-cache
-              mountPath: /models-cache
+              mountPath: /opt/app-root/src/.cache
             - name: shm
               mountPath: /dev/shm
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.0.post1'
+          image: 'quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.2'
       volumes:
         - name: models-cache
           persistentVolumeClaim:

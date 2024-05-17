@@ -1,37 +1,56 @@
-## install nvidia driver 
-## install container toolkit
-## run cdi configuration correctly (nvidia-ctk cdi list)
-## provide read access to cdi configuration: chmod + ... /etc/cdi/nvidia.yaml
 
-## create common network
+## Install NVIDIA Driver
+
+## Install Container Toolkit
+
+## Run CDI Configuration Correctly
+```sh
+nvidia-ctk cdi list
+```
+
+## Provide Read Access to CDI Configuration
+```sh
+chmod + ... /etc/cdi/nvidia.yaml
+```
+
+## Create Common Network
+```sh
 podman network create rag_network
+```
 
-## start VLLM container locally
+## Start VLLM Container Locally
+```sh
 podman run -d --rm --name vllm --security-opt label=disable --device nvidia.com/gpu=all \
-    -v /home/maxisses/TechStuff/openshift-rag-testbench/vllm/vllm-native/localdata:/root/.cache/huggingface \
+    -v /home/maxisses/TechStuff/openshift-rag-testbench/vllm/vllm-native/localdata/hub:/opt/app-root/src/.cache/huggingface/hub \
     -e HF_TOKEN=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 \
     -p 8000:8000 \
     --network rag_network \
-    vllm/vllm-openai:latest \
-    --model mistralai/Mistral-7B-Instruct-v0.2 --max-model-len 512
+    quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.2 \
+    --model TheBloke/Mistral-7B-Instruct-v0.2-AWQ --dtype float16 --max-model-len 19872
+```
 
-## start OLLAMA container locally
-podman run -it --rm --name ollama --security-opt label=disable --device nvidia.com/gpu=all \
+## Start OLLAMA Container Locally
+```sh
+podman run -d --rm --name ollama --security-opt label=disable --device nvidia.com/gpu=all \
     -v /home/maxisses/TechStuff/openshift-rag-testbench/ollama/localdata:/root/.ollama \
     -e HF_TOKEN=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 \
     -p 11434:11434 \
     --network rag_network \
-    ollama/ollama:latest
+    quay.io/wcaban/ollama:latest
+```
 
-## start jupyter locally
+## Start Jupyter Locally
+```sh
 podman run -p 8888:8888 -d --rm \
     -v /home/maxisses/TechStuff/openshift-rag-testbench/notebooks-for-ingestion/localdata:/opt/app-root/src/mydata \
     -v /home/maxisses/TechStuff/openshift-rag-testbench/notebooks-for-ingestion/localdata/huggingface:/opt/app-root/src/.cache/ \
     --security-opt label=disable --device nvidia.com/gpu=all -e HF_TOKEN=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 \
     --network rag_network \
     quay.io/mdargatz/rag-ingest-workbench
+```
 
-## start milvus locally
+## Start Milvus Locally
+```sh
 podman run -d --rm \
     --name vectordb-milvus \
     --security-opt label=disable \
@@ -50,13 +69,28 @@ podman run -d --rm \
     --health-timeout=20s \
     --health-retries=3 \
     --network rag_network \
-    milvusdb/milvus:v2.4.0 milvus run standalone \
-#    1> /dev/null
+    milvusdb/milvus:v2.4.0 milvus run standalone
+```
 
-
-## start streamlit locally
+## Start Streamlit Locally
+```sh
 podman run -d --rm --security-opt label=disable \
     -p 8501:8501 \
     -v /home/maxisses/TechStuff/openshift-rag-testbench/streamlit/localdata/:/opt/app-root/src/.cache/ \
     --network rag_network \
-    quay.io/mdargatz/streamlitbot
+    quay.io/mdargatz/streamlitbot:latest
+```
+
+## Start Streamlit Locally in Dev mode
+```sh
+podman run --rm --security-opt label=disable \
+    -p 8501:8501 \
+    -v /home/maxisses/TechStuff/openshift-rag-testbench/streamlit/localdata/:/opt/app-root/src/.cache/ \
+    -v /home/maxisses/TechStuff/openshift-rag-testbench/streamlit/rag-bot.py:/opt/app-root/src/rag-bot.py \
+    -v /home/maxisses/TechStuff/openshift-rag-testbench/streamlit/.streamlit:/opt/app-root/src/.streamlit \
+    --network rag_network \
+    quay.io/mdargatz/streamlitbot:dev
+```
+
+COPY ./.streamlit /app/.streamlit
+COPY rag-bot.py /app/rag-bot.py

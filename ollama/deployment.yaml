@@ -13,9 +13,9 @@ spec:
         app: ollama-app
     spec:
       volumes:
-        - name: ollama-data
+        - name: ollama-storage
           persistentVolumeClaim:
-            claimName: ollama-data
+            claimName: ollama-storage
       containers:
         - resources:
             limits:
@@ -42,8 +42,8 @@ spec:
               protocol: TCP
           imagePullPolicy: Always
           volumeMounts:
-            - name: ollama-data
-              mountPath: /.ollama
+          - mountPath: /.ollama
+            name: ollama-storage
           terminationMessagePolicy: File
           image: 'docker.io/ollama/ollama:latest'
           args:

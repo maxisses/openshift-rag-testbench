@@ -22,11 +22,19 @@ spec:
           envFrom:
             - configMapRef:
                 name: rag-frontend-config  # Mount the ConfigMap here
+          volumeMounts:
+            - name: streamlit-localdata
+              mountPath: /opt/app-root/src/.cache/
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
+      volumes:
+        - name: streamlit-localdata
+          persistentVolumeClaim:
+            claimName: rag-frontend-pvc
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 25%
       maxSurge: 25%
+You need to create a PersistentVolumeClaim (PVC) named rag-frontend-pvc separately in your Kubernetes or OpenS

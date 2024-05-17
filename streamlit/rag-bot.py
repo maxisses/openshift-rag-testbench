@@ -93,7 +93,7 @@ st.title(APP_NAME + 'Bot')
 #####################################
 model_url_names = {
     "http://vllm:8000/v1":['mistralai/Mistral-7B-Instruct-v0.2','meta-llama/Meta-Llama-3-8B-Instruct'] + ["Another model name..."],
-    "https://api.openai.com/v1":['gpt-4-turbo','gpt-4-32k'] + ["Another model name..."],
+    "https://api.openai.com/v1":['gpt-4o','gpt-4-turbo','gpt-4-32k'] + ["Another model name..."],
     "http://ollama:11434":['mistral','llama2','llama3'] + ["Another model name..."],
     "Another option":[],
 }

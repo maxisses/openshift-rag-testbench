@@ -11,9 +11,6 @@ RUN pip3 install --no-deps sentence-transformers
 COPY requirements.txt /opt/app-root/src/requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY ./.streamlit /opt/app-root/src/.streamlit
-COPY rag-bot.py /opt/app-root/src/rag-bot.py
-
 EXPOSE 8501
 
 ENTRYPOINT ["streamlit", "run", "rag-bot.py", "--server.port=8501", "--server.address=0.0.0.0"]
