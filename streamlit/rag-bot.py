@@ -139,7 +139,7 @@ Question: {question} [/INST]
 """)
 
 st.title(f'{app_name}Bot')
-st.subheader("This application helps you interact with your own knowledge base and try out different models from self-hosted to OpenAI. It supports only text input.")
+st.caption("This application helps you interact with your own knowledge base and try out different models from self-hosted to OpenAI. It leverages [RAG](https://www.redhat.com/de/blog/redefining-development-retrieval-augmented-generation-rag-revolution-software-engineering) and gives you many configuration options to tune how RAG behaves and how to tune the model parameters. It supports text input. Check out this [Git Repo](https://github.com/maxisses/openshift-rag-testbench) to learn more about it and how to ingest your own knowledge base - supporting PDFs, Docs, PPTX or your Confluence Wiki. Check out the details [here](https://python.langchain.com/v0.1/docs/modules/data_connection/document_loaders/)")
 
 # create dropdowns for url and model selection
 model_endpoints = {
@@ -179,7 +179,7 @@ if model_url_key != 'select':
             else:
                 st.warning("Please enter a valid OpenAI API key starting with 'sk'.")
     else:
-        model_url = st.sidebar.text_input("Enter your model endpoint...")
+        model_url = st.sidebar.text_input("Enter your model endpoint...(e.g. http://ollama:11434 or http://vllm:8000/v1)")
         model_option = st.sidebar.radio(
             "Help us retrieve available models by selecting the service type:",
             options=["Ollama", "vLLM"]
