@@ -15,7 +15,7 @@ oc new-project <yourname>-chatbot
 oc apply -f milvus/bucket-claim.yaml
 ```
 
-#### 2. Download helm repo & Update milvus/openshift-values.yaml with your Object Bucket credentials or activate minio (which autogenerates for you but also spins up minio)
+#### 2. Download helm repo & Update milvus/openshift-values.yaml with your Object Bucket credentials or activate minio (which autogenerates for you but also spins up minio). Refer to this repo for further instructions: [LLM-ON-OpenShift](https://github.com/rh-aiservices-bu/llm-on-openshift/tree/main/vector-databases/milvus)
 ```bash
 helm template -f openshift-values.yaml vectordb --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false milvus/milvus > milvus_manifest_standalone.yaml
 
