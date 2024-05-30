@@ -3,13 +3,13 @@ apiVersion: v1
 metadata:
   name: rag-frontend-config
 data:
-  INFERENCE_SERVER_URL: "http://ollama:11434"
-  MODEL_NAME: "mistral"
+  VLLM_ENDPOINT: "http://vllm:8000/v1"
+  OLLAMA_ENDPOINT: "http://ollama:11434"
+  OPENAI_ENDPOINT: "https://api.openai.com/v1"
   MILVUS_HOST: "vectordb-milvus"
   MILVUS_PORT: "19530"
   MILVUS_USERNAME: "root"
   MILVUS_PASSWORD: "Milvus"
-  MILVUS_COLLECTION: "redhat_notes"
   MAX_TOKENS: "2048"
   TOP_P: "0.95"
   TEMPERATURE: "0.01"

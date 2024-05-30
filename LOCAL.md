@@ -36,7 +36,7 @@ podman run -d --rm --name ollama --security-opt label=disable --device nvidia.co
     -e HF_TOKEN=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 \
     -p 11434:11434 \
     --network rag_network \
-    quay.io/wcaban/ollama:latest
+    docker.io/ollama/ollama:latest
 ```
 
 ## Start Jupyter Locally

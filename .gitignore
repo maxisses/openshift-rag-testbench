@@ -5,6 +5,7 @@ vllm/vllm-native/secret.yaml
 streamlit/.odo
 streamlit/.streamlit
 streamlit/venv
+streamlit/myenv
 streamlit/.DS_Store
 notebooks-for-ingestion/pdfs/*
 notebooks-for-ingestion/pptx/*
