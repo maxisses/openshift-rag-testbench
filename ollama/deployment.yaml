@@ -31,7 +31,7 @@ spec:
                 command:
                   - /bin/sh
                   - '-c'
-                  - /bin/ollama pull mistral
+                  - "/bin/ollama pull mistral && /bin/ollama pull llama3 && /bin/ollama pull sroecker/granite-7b-lab"
           name: ollama
           env:
             - name: FOO
