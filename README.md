@@ -1,5 +1,12 @@
+## Introduction
+This repo contains instructions to deploy a full RAG application on OpenShift and OpenShift AI.
+It contains Jupyter Notebooks to ingest data into a vector dabase (Milvus) and a streamlit Application to actually interact with your own knowledge and popular LLMs (e.g. llama3-7B,Mistral 7B or granite-7B).
+You will 
+It leverages [RAG](https://www.redhat.com/de/blog/redefining-development-retrieval-augmented-generation-rag-revolution-software-engineering) and gives you many configuration options to tune how RAG behaves and how to tune the model parameters. It supports text input. Check out this [Git Repo](https://github.com/maxisses/openshift-rag-testbench) to learn more about it and how to ingest your own knowledge base - supporting PDFs, Docs, PPTX or your Confluence Wiki. Check out the details [here](https://python.langchain.com/v0.1/docs/modules/data_connection/document_loaders/
 
-## Infra SetUp
+The following contains a description on how to set it up on Kubernetes / OpenShift. There is also a guide on how to deploy it locally with podman, albeit it would need some customization on the mount paths and on your CDI (NVIDIA configuration) configuration.
+
+## Infrastructure SetUp
 
 ### a) MILVUS Vector DB
 
@@ -51,9 +58,10 @@ oc apply -f streamlit/k8s
 oc create route edge --service=rag-frontend
 ```
 
-### e) Alternative: Deploy vLLM via standard Deployment, Warning: GPU required, it loads mistral7B per default ~~requires approx 20GB RAM 
+### e) Alternative: Deploy vLLM via standard Deployment, Warning: GPU required, it loads mistral7B per default ~~requires approx 20GB RAM if not quantized, a good alternative is the model "TheBloke/Mistral-7B-Instruct-v0.2-AWQ"
 
 #### 1. Put a Secret.yaml in the vllm/vllm-native/, which contains your Huggingface token
 ```bash
 oc apply -f vllm/vllm-native/
+
 ```
