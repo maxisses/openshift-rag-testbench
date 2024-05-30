@@ -139,6 +139,7 @@ Question: {question} [/INST]
 """)
 
 st.title(f'{app_name}Bot')
+st.subheader("This application helps you interact with your own knowledge base and try out different models from self-hosted to OpenAI. It supports only text input.")
 
 # create dropdowns for url and model selection
 model_endpoints = {
@@ -257,7 +258,7 @@ def remove_duplicates(input_list):
 
 def stream(input_text: str, selected_collection: str, model_url_key: str) -> Generator:
     queue = Queue()
-    if model_option == "vLLM":
+    if model_url_key == "vLLM":
         llm = VLLMOpenAI(
             openai_api_key=openai_api_key,
             openai_api_base=model_url,
@@ -271,7 +272,7 @@ def stream(input_text: str, selected_collection: str, model_url_key: str) -> Gen
             callbacks=[QueueCallback(queue)]
         )
         st.success('vLLM runs on a GPU at ' + model_url + " using " + llm_model_name, icon="✅")
-    elif model_option == "Ollama":
+    elif model_url_key == "Ollama":
         llm = Ollama(
             base_url=model_url,
             model=llm_model_name,
@@ -297,7 +298,7 @@ def stream(input_text: str, selected_collection: str, model_url_key: str) -> Gen
         )
         st.success('You are using the OpenAI Cloud Service at ' + model_url + " using " + llm_model_name, icon="✅")
     else:
-        if model_url_key == "vLLM":
+        if model_option == "vLLM":
             llm = VLLMOpenAI(
                 openai_api_key=openai_api_key,
                 openai_api_base=model_url,
@@ -311,8 +312,7 @@ def stream(input_text: str, selected_collection: str, model_url_key: str) -> Gen
                 callbacks=[QueueCallback(queue)]
             )
             st.success('vLLM runs on a GPU at ' + model_url + " using " + llm_model_name, icon="✅")
-        elif model_url_key == "Ollama":
-            st.success('Ollama can run on GPU & CPU. You are at ' + model_url + " using " + llm_model_name, icon="✅")
+        elif model_option == "Ollama":
             llm = Ollama(
                 base_url=model_url,
                 model=llm_model_name,
