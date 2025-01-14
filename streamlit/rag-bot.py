@@ -63,7 +63,7 @@ if not check_password():
 def get_vllm_models(model_url):
     """Fetch model names from VLLM."""
     url = model_url +'/models'
-    response = requests.get(url, headers={'accept': 'application/json'})
+    response = requests.get(url, headers={'accept': 'application/json'}, verify=False)
     if response.status_code == 200:
         data = response.json()
         return [model['id'] for model in data['data']]
